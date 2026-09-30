@@ -1,0 +1,17 @@
+{
+    "cmake.useCMakePresets": "never",
+    "cmake.cmakePath": "C:\\ST\\STM32CubeCLT_1.22.0\\CMake\\bin\\cmake.exe",
+    "cmake.generator": "Ninja",
+    "cmake.configureArgs": [
+        "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/arm-toolchain.cmake",
+        "-DCMAKE_MAKE_PROGRAM=C:/ST/STM32CubeCLT_1.22.0/Ninja/bin/ninja.exe"
+    ],
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build",
+        "--background-index",
+        "--header-insertion=never"
+    ],
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "STM32VSCodeExtension.cubeCLT.path": "C:\\ST\\STM32CubeCLT_1.22.0"
+}
