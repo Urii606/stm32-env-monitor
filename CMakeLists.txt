@@ -18,6 +18,7 @@ add_subdirectory(lib/stm32-drivers)
 # Основний виконуваний файл вашого проєкту
 add_executable(${PROJECT_NAME}
     App/Src/main.c
+    App/Src/logger.c
     startup/startup_stm32f401xe.s
 )
 
