@@ -13,5 +13,9 @@
         "--header-insertion=never"
     ],
     "C_Cpp.intelliSenseEngine": "disabled",
-    "STM32VSCodeExtension.cubeCLT.path": "C:\\ST\\STM32CubeCLT_1.22.0"
+    "STM32VSCodeExtension.cubeCLT.path": "C:\\ST\\STM32CubeCLT_1.22.0",
+    "[c]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+        "editor.formatOnSave": true
+    }
 }
