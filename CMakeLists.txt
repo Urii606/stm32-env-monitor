@@ -20,17 +20,18 @@ add_executable(${PROJECT_NAME}
     App/Src/main.c
     App/Src/logger.c
     startup/startup_stm32f411xe.s
+    Devices/Src/bme280.c
 )
 
 # Підключаємо наші власні папки з хедерами (якщо вони є в App/Inc)
 target_include_directories(${PROJECT_NAME} PRIVATE
     App/Inc
+    Devices/Inc
 )
 
 # Лінкуємо статичну бібліотеку драйверів, яку ми створили в сабмодулі
 target_link_libraries(${PROJECT_NAME} PRIVATE stm32_drivers)
 
-# Передаємо прапорці лінкеру (без nosys.specs, оскільки маємо syscall.c)
 # Передаємо прапорці лінкеру (без nosys.specs, оскільки маємо syscall.c)
 # Передаємо прапорці лінкеру (кожен з нового рядка, щоб CMake їх не склеював)
 target_link_options(${PROJECT_NAME} PRIVATE
