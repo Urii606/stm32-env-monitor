@@ -19,7 +19,7 @@ add_subdirectory(lib/stm32-drivers)
 add_executable(${PROJECT_NAME}
     App/Src/main.c
     App/Src/logger.c
-    startup/startup_stm32f401xe.s
+    startup/startup_stm32f411xe.s
 )
 
 # Підключаємо наші власні папки з хедерами (якщо вони є в App/Inc)
