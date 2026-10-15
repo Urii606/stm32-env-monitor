@@ -1,13 +1,20 @@
 #pragma once
 
-#include "stm32f411xx_usart_driver.h"
+/**
+ * @brief Severity levels for application logging events.
+ */
+typedef enum {
+    LOG_LEVEL_INFO,    /**< General informational runtime events */
+    LOG_LEVEL_WARNING, /**< Recoverable anomalies or warnings */
+    LOG_LEVEL_ERROR    /**< Critical hardware or logic failures */
+} LogLevel_t;
 
-typedef enum
-{
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_WARNING,
-    LOG_LEVEL_ERROR
-}LogLevel_t;
-
-void Logger_Init(USART_Handle_t* p_usart);
-void Logger_Log(LogLevel_t log_level,const char* msg);
+/**
+ * @brief Formats a diagnostic message with severity prefix and emits it to the console.
+ * 
+ * @note This function is stateless and relies on the BSP console layer being initialized.
+ * 
+ * @param log_level Severity classification of the log entry.
+ * @param msg       Null-terminated payload string. Passing NULL safely renders "(null)".
+ */
+void Logger_Log(LogLevel_t log_level, const char *msg);

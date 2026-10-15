@@ -1,13 +1,26 @@
+/**
+ * @file    logger.c
+ * @brief   Application logging service implementation.
+ *          Decoupled from micro-controller peripherals via the BSP console interface.
+ */
+
 #include "logger.h"
+#include "console.h"
+#include <stdio.h>
 #include <string.h>
 
-static void Logger_PrintString(const char *msg);
+/* Maximum single-line capacity including prefix, payload, CRLF, and null terminator */
+#define LOG_MAX_LINE_LEN 128U
 
-static USART_Handle_t *s_p_usart = NULL; // saving state
-
-void Logger_Init(USART_Handle_t *p_usart) { s_p_usart = p_usart; }
 void Logger_Log(LogLevel_t log_level, const char *msg) {
+    /* Guard clause: prevent undefined behavior from null pointer dereferencing */
+    if (msg == NULL) {
+        msg = "(null)";
+    }
+
     const char *prefix = NULL;
+    char line_buffer[LOG_MAX_LINE_LEN];
+
     switch (log_level) {
     case LOG_LEVEL_INFO:
         prefix = "[INFO] ";
@@ -22,18 +35,10 @@ void Logger_Log(LogLevel_t log_level, const char *msg) {
         prefix = "[UNKNOWN] ";
         break;
     }
-    Logger_PrintString(prefix);
-    Logger_PrintString(msg);
-    Logger_PrintString("\r\n");
-}
 
-static void Logger_PrintString(const char *str) {
+    /* Format line into a single atomic frame */
+    snprintf(line_buffer, sizeof(line_buffer), "%s%s\r\n", prefix, msg);
 
-    if (str == NULL) {
-        str = "(null)";
-    }
-    uint32_t len = strlen(str);
-    for (uint32_t i = 0; i < len; i++) {
-        USART_SendData(s_p_usart, (uint8_t *)&str[i], 1);
-    }
+    /* Dispatch payload synchronously to the hardware transport */
+    Console_Write(line_buffer, strlen(line_buffer));
 }
