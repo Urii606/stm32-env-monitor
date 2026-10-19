@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(stm32-env-monitor C CXX ASM)
 
+add_compile_options(-mcpu=cortex-m4 -mthumb)
+add_link_options(-mcpu=cortex-m4 -mthumb)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Прапорці мікроконтролера STM32F411 (Cortex-M4F)
@@ -21,6 +24,7 @@ add_executable(${PROJECT_NAME}
     App/Src/logger.c
     startup/startup_stm32f411xe.s
     Devices/Src/buzzer.c
+    Devices/Src/dht11.c
     BSP/Src/console.c
     )
 
@@ -41,6 +45,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
     -mfloat-abi=hard
     -mthumb
     -T${LINKER_SCRIPT}
+    --specs=nosys.specs 
     --specs=nano.specs
     -Wl,-Map=${PROJECT_NAME}.map
     -Wl,--gc-sections
@@ -52,3 +57,5 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O binary ${PROJECT_NAME} ${PROJECT_NAME}.bin
     COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}
 )
+
+
