@@ -14,6 +14,7 @@ int main(void) {
         while (1) {
         }
     }
+    Delay_Init();
 
     Buzzer_Handle_t buzzer = {.pGPIOx = GPIOA, .pin_number = 1, .active_state = BUZZER_ACTIVE_LOW};
     const DHT11_Handle_t dht11 = {.pGPIOx = GPIOA, .pin_number = 2};
@@ -34,8 +35,6 @@ int main(void) {
 
     Logger_Log(LOG_LEVEL_INFO, "System started successfully");
     while (1) {
-        Buzzer_Toggle(&buzzer);
-        Logger_Log(LOG_LEVEL_INFO, "Buzzer is toggling");
         if (DHT11_Read(&dht11, &data) != DHT11_OK) {
             Logger_Log(LOG_LEVEL_ERROR, "Error in dht11_read");
         }
@@ -46,6 +45,10 @@ int main(void) {
         Logger_Log(LOG_LEVEL_INFO, "Temperature:");
         uint8_to_str(data.temperature, str_buf);
         Logger_Log(LOG_LEVEL_INFO, str_buf);
+        if (data.temperature > 0) {
+            Buzzer_Toggle(&buzzer);
+            Logger_Log(LOG_LEVEL_INFO, "Buzzer is toggling");
+        }
         Delay_Us(2000000);
     }
     return 0;
