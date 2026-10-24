@@ -28,6 +28,8 @@ add_executable(${PROJECT_NAME}
     BSP/Src/console.c
     )
 
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+
 # Підключаємо наші власні папки з хедерами (якщо вони є в App/Inc)
 target_include_directories(${PROJECT_NAME} PRIVATE
     App/Inc

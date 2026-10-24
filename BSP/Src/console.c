@@ -167,3 +167,4 @@ void USART_ApplicationEventCallback(USART_Handle_t *pUSARTHandle, uint8_t ApEv) 
  * @brief Hardware ISR vector handler defined in startup assembly.
  */
 void USART1_IRQHandler(void) { USART_IRQHandling(&s_usart_handle); }
+

@@ -1,5 +1,6 @@
 #include <stddef.h>
 
+#include "debug_pins.h"
 #include "dht11.h"
 #include "stm32f411xx_dwt_delay.h"
 
@@ -38,6 +39,7 @@ DHT11_Status_t DHT11_Init(const DHT11_Handle_t *dev) {
 }
 
 DHT11_Status_t DHT11_Read(const DHT11_Handle_t *dev, DHT11_Data_t *data) {
+
     if (dev == NULL || data == NULL) {
         return DHT11_ERR_PARAM;
     }
@@ -45,11 +47,14 @@ DHT11_Status_t DHT11_Read(const DHT11_Handle_t *dev, DHT11_Data_t *data) {
     /* Disable interrupts during time-critical 1-Wire communication */
     DISABLE_GLOBAL_INTERRUPTS();
 
+    DEBUG_PIN_HIGH();
+
     s_DHT11_Start(dev);
 
     if (s_DHT11_Check_Response(dev) == DHT11_ERR_TIMEOUT) {
         /* Always restore interrupts before early return to prevent system lockout */
         ENABLE_GLOBAL_INTERRUPTS();
+        DEBUG_PIN_LOW();
         return DHT11_ERR_TIMEOUT;
     }
 
@@ -57,12 +62,14 @@ DHT11_Status_t DHT11_Read(const DHT11_Handle_t *dev, DHT11_Data_t *data) {
     for (uint8_t i = 0; i < 5; i++) {
         if (s_DHT11_Read_Byte(dev, &raw_data[i]) == DHT11_ERR_TIMEOUT) {
             ENABLE_GLOBAL_INTERRUPTS();
+            DEBUG_PIN_LOW();
             return DHT11_ERR_TIMEOUT;
         }
     }
 
     /* Re-enable interrupts immediately after bit polling completes */
     ENABLE_GLOBAL_INTERRUPTS();
+    DEBUG_PIN_LOW();
 
     /* Verify 8-bit checksum: sum of first 4 bytes must match byte 5 */
     if (raw_data[4] != (uint8_t)(raw_data[0] + raw_data[1] + raw_data[2] + raw_data[3])) {
@@ -71,7 +78,6 @@ DHT11_Status_t DHT11_Read(const DHT11_Handle_t *dev, DHT11_Data_t *data) {
 
     data->humidity = raw_data[0];
     data->temperature = raw_data[2];
-
     return DHT11_OK;
 }
 

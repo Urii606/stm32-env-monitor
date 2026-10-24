@@ -1,9 +1,11 @@
 #include "buzzer.h"
 #include "console.h"
+#include "debug_pins.h"
 #include "dht11.h"
 #include "logger.h"
 #include "stm32f411xx_dwt_delay.h"
 #include <stdint.h>
+
 
 void SystemInit(void) {}
 
@@ -15,6 +17,7 @@ int main(void) {
         }
     }
     Delay_Init();
+    DEBUG_PIN_INIT();
 
     Buzzer_Handle_t buzzer = {.pGPIOx = GPIOA, .pin_number = 1, .active_state = BUZZER_ACTIVE_LOW};
     const DHT11_Handle_t dht11 = {.pGPIOx = GPIOA, .pin_number = 2};
