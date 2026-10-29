@@ -1,46 +1,59 @@
 cmake_minimum_required(VERSION 3.22)
 project(stm32-env-monitor C CXX ASM)
 
+# Set base CPU and instruction set target for compiler and linker
 add_compile_options(-mcpu=cortex-m4 -mthumb)
 add_link_options(-mcpu=cortex-m4 -mthumb)
 
+# Generate compile_commands.json to support language server navigation (clangd, VSCode)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Прапорці мікроконтролера STM32F411 (Cortex-M4F)
+# Enable single-precision hardware FPU and hard-float ABI for Cortex-M4F
 set(MCU_FLAGS "-mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb")
 
-set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wextra -O0 -g3 -DSTM32F411xE" CACHE INTERNAL "C Flags")
-set(CMAKE_ASM_FLAGS "${MCU_FLAGS} -x assembler-with-cpp" CACHE INTERNAL "ASM Flags")
+# Select build flags based on CMAKE_BUILD_TYPE configuration
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # Disable optimization (-O0) and include max debug symbols (-g3) for interactive debugging
+    set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wextra -O0 -g3 -DSTM32F411xE")
+else()
+    # Optimize for code size (-Os) in production builds
+    set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wextra -Os -DSTM32F411xE")
+endif()
 
-# Файл лінкера
+# Specify memory layout script for the linker
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/startup/stm32f411xe_flash.ld)
 
-# Підключаємо сабмодуль із драйверами
+# Include hardware abstraction driver library subproject
 add_subdirectory(lib/stm32-drivers)
 
-# Основний виконуваний файл вашого проєкту
+# Define project executable and its target source files
 add_executable(${PROJECT_NAME}
     App/Src/main.c
     App/Src/logger.c
     startup/startup_stm32f411xe.s
     Devices/Src/buzzer.c
     Devices/Src/dht11.c
+    Devices/Src/lcd1602.c
     BSP/Src/console.c
-    )
+    BSP/Src/bsp.c
+)
 
+# Conditionally pass DEBUG preprocessor macro only for Debug target builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+endif()
 
-# Підключаємо наші власні папки з хедерами (якщо вони є в App/Inc)
+# Include paths for application, device drivers, and BSP headers
 target_include_directories(${PROJECT_NAME} PRIVATE
     App/Inc
     Devices/Inc
     BSP/Inc
 )
 
-# Лінкуємо статичну бібліотеку драйверів, яку ми створили в сабмодулі
+# Link static driver library
 target_link_libraries(${PROJECT_NAME} PRIVATE stm32_drivers)
 
-# Передаємо прапорці лінкеру (кожен з нового рядка, щоб CMake їх не склеював)
+# Configure low-level linker options and standard library specs
 target_link_options(${PROJECT_NAME} PRIVATE
     -mcpu=cortex-m4
     -mfpu=fpv4-sp-d16
@@ -48,16 +61,14 @@ target_link_options(${PROJECT_NAME} PRIVATE
     -mthumb
     -T${LINKER_SCRIPT}
     --specs=nosys.specs 
-    --specs=nano.specs
-    -Wl,-Map=${PROJECT_NAME}.map
-    -Wl,--gc-sections
+    --specs=nano.specs            # Use newlib-nano to minimize SRAM footprint
+    -Wl,-Map=${PROJECT_NAME}.map  # Generate memory map file for RAM/Flash analysis
+    -Wl,--gc-sections             # Remove unreferenced functions/data to save Flash
 )
 
-# Генерація бінарників .bin та .hex
+# Post-build step: convert ELF output into flashable binaries and print RAM/Flash usage
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex ${PROJECT_NAME} ${PROJECT_NAME}.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary ${PROJECT_NAME} ${PROJECT_NAME}.bin
     COMMAND ${CMAKE_SIZE} ${PROJECT_NAME}
 )
-
-
